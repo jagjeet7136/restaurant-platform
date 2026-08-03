@@ -1,0 +1,15 @@
+# IntelliJ
+.idea/
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Maven build output for every service
+**/target/
+
+# Logs
+*.log
