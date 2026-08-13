@@ -1,5 +1,6 @@
 package com.mspp.restaurantservice.restaurant.service.impl;
 
+import com.mspp.restaurantservice.exception.DuplicateResourceException;
 import com.mspp.restaurantservice.exception.ResourceNotFoundException;
 import com.mspp.restaurantservice.restaurant.dto.request.RestaurantRequest;
 import com.mspp.restaurantservice.restaurant.dto.response.RestaurantResponse;
@@ -18,7 +19,11 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Override
     public RestaurantResponse createRestaurant(RestaurantRequest request) {
-
+        if (restaurantRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateResourceException(
+                    "Restaurant with email '" + request.getEmail()
+                            + "' already exists");
+        }
         Restaurant restaurant = new Restaurant();
         restaurant.setName(request.getName());
         restaurant.setDescription(request.getDescription());
