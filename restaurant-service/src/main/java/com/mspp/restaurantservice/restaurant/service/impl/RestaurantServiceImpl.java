@@ -8,12 +8,16 @@ import com.mspp.restaurantservice.restaurant.dto.response.RestaurantResponse;
 import com.mspp.restaurantservice.restaurant.entity.Restaurant;
 import com.mspp.restaurantservice.restaurant.repository.RestaurantRepository;
 import com.mspp.restaurantservice.restaurant.service.RestaurantService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class RestaurantServiceImpl implements RestaurantService {
 
     private final RestaurantRepository restaurantRepository;
@@ -41,6 +45,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RestaurantResponse getRestaurantById(Long id) {
 
         Restaurant restaurant = restaurantRepository.findById(id)
@@ -51,12 +56,10 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
-    public List<RestaurantResponse> getAllRestaurants() {
-
-        return restaurantRepository.findAll()
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
+    @Transactional(readOnly = true)
+    public Page<RestaurantResponse> getAllRestaurants(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return restaurantRepository.findAll(pageable).map(this::mapToResponse);
     }
 
     @Override
@@ -87,7 +90,6 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Restaurant not found with id: " + id));
-
         restaurantRepository.delete(restaurant);
     }
 
