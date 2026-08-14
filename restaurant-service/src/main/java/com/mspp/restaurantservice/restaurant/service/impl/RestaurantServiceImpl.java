@@ -1,5 +1,6 @@
 package com.mspp.restaurantservice.restaurant.service.impl;
 
+import com.mspp.restaurantservice.exception.BusinessValidationException;
 import com.mspp.restaurantservice.exception.DuplicateResourceException;
 import com.mspp.restaurantservice.exception.ResourceNotFoundException;
 import com.mspp.restaurantservice.restaurant.dto.request.RestaurantRequest;
@@ -19,6 +20,7 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Override
     public RestaurantResponse createRestaurant(RestaurantRequest request) {
+        validateOperatingHours(request);
         if (restaurantRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateResourceException(
                     "Restaurant with email '" + request.getEmail()
@@ -59,7 +61,7 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Override
     public RestaurantResponse updateRestaurant(Long id, RestaurantRequest request) {
-
+        validateOperatingHours(request);
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -104,5 +106,15 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .createdAt(restaurant.getCreatedAt())
                 .updatedAt(restaurant.getUpdatedAt())
                 .build();
+    }
+
+    private void validateOperatingHours(RestaurantRequest request) {
+
+        if (!request.getOpeningTime()
+                .isBefore(request.getClosingTime())) {
+
+            throw new BusinessValidationException(
+                    "Opening time must be before closing time");
+        }
     }
 }
