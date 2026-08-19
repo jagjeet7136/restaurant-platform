@@ -8,7 +8,7 @@ public interface RestaurantService {
 
     RestaurantResponse createRestaurant(RestaurantRequest request);
     RestaurantResponse getRestaurantById(Long id);
-    Page<RestaurantResponse> getAllRestaurants(int page, int size);
+    Page<RestaurantResponse> getAllRestaurants(int page, int size, String sortBy, String direction);
     RestaurantResponse updateRestaurant(Long id, RestaurantRequest request);
     void deleteRestaurant(Long id);
 }
