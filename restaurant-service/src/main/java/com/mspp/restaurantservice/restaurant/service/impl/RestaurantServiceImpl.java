@@ -11,12 +11,14 @@ import com.mspp.restaurantservice.restaurant.service.RestaurantService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Sort;
-
 import java.util.Set;
+import static com.mspp.restaurantservice.restaurant.specification.RestaurantSpecification.hasActive;
+import static com.mspp.restaurantservice.restaurant.specification.RestaurantSpecification.hasCuisine;
 
 @Service
 @RequiredArgsConstructor
@@ -60,19 +62,16 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<RestaurantResponse> getAllRestaurants(int page, int size, String sortBy, String direction) {
+    public Page<RestaurantResponse> getAllRestaurants(int page, int size, String sortBy, String direction,
+                                                      String cuisine, Boolean active) {
         validateSortField(sortBy);
-        Sort.Direction sortDirection =
-                validateSortDirection(direction);
+        Sort.Direction sortDirection = validateSortDirection(direction);
 
-        Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by(sortDirection, sortBy)
-        );
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
 
-        return restaurantRepository.findAll(pageable)
-                .map(this::mapToResponse);
+        Specification<Restaurant> specification = Specification.where(hasCuisine(cuisine)).and(hasActive(active));
+
+        return restaurantRepository.findAll(specification, pageable).map(this::mapToResponse);
     }
 
     @Override
@@ -125,22 +124,13 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     private void validateSortField(String sortBy) {
-        Set<String> allowedFields = Set.of(
-                "id",
-                "name",
-                "cuisine",
-                "rating",
-                "createdAt",
-                "updatedAt"
-        );
-
+        Set<String> allowedFields = Set.of("id", "name", "cuisine", "rating", "createdAt", "updatedAt");
         if (!allowedFields.contains(sortBy)) {
             throw new BusinessValidationException("Invalid sort field: " + sortBy);
         }
     }
 
     private Sort.Direction validateSortDirection(String direction) {
-
         if (!direction.equalsIgnoreCase("asc") && !direction.equalsIgnoreCase("desc")) {
             throw new BusinessValidationException("Sort direction must be either 'asc' or 'desc'");
         }

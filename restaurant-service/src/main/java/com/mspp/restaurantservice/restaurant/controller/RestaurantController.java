@@ -37,8 +37,10 @@ public class RestaurantController {
             @RequestParam(defaultValue = "10") @Min(value = 1, message = "Page size must be at least 1")
             @Max(value = 100, message = "Page size must not exceed 100") int size,
             @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "asc") String direction) {
-        return restaurantService.getAllRestaurants(page, size, sortBy, direction);
+            @RequestParam(defaultValue = "asc") String direction,
+            @RequestParam(required = false) String cuisine,
+            @RequestParam(required = false) Boolean active) {
+        return restaurantService.getAllRestaurants(page, size, sortBy, direction, cuisine, active);
     }
 
     @PutMapping("/{id}")
