@@ -28,4 +28,15 @@ public class RestaurantSpecification {
             );
         };
     }
+
+    public static Specification<Restaurant> hasName(String name) {
+        return (root, query, criteriaBuilder) -> {
+            if(name==null || name.isBlank()) {
+                return null;
+            }
+            return criteriaBuilder.like(
+                    criteriaBuilder.lower(root.get("name")), "%" + name.trim().toLowerCase() + "%"
+            );
+        };
+    }
 }

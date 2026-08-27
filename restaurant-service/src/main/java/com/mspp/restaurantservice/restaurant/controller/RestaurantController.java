@@ -1,13 +1,14 @@
 package com.mspp.restaurantservice.restaurant.controller;
 
 import com.mspp.restaurantservice.restaurant.dto.request.RestaurantRequest;
+import com.mspp.restaurantservice.restaurant.dto.request.RestaurantSearchRequest;
+import com.mspp.restaurantservice.restaurant.dto.response.PageResponse;
 import com.mspp.restaurantservice.restaurant.dto.response.RestaurantResponse;
 import com.mspp.restaurantservice.restaurant.service.RestaurantService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -32,15 +33,15 @@ public class RestaurantController {
     }
 
     @GetMapping
-    public Page<RestaurantResponse> getAllRestaurants(@RequestParam(defaultValue = "0")
+    public PageResponse<RestaurantResponse> getAllRestaurants(@RequestParam(defaultValue = "0")
             @Min(value = 0, message = "Page number must be 0 or greater") int page,
-            @RequestParam(defaultValue = "10") @Min(value = 1, message = "Page size must be at least 1")
+                                                              @RequestParam(defaultValue = "10")
+                                                              @Min(value = 1, message = "Page size must be at least 1")
             @Max(value = 100, message = "Page size must not exceed 100") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "asc") String direction,
-            @RequestParam(required = false) String cuisine,
-            @RequestParam(required = false) Boolean active) {
-        return restaurantService.getAllRestaurants(page, size, sortBy, direction, cuisine, active);
+                                                              @RequestParam(defaultValue = "id") String sortBy,
+                                                              @RequestParam(defaultValue = "asc") String direction,
+                                                              @ModelAttribute RestaurantSearchRequest restaurantSearchRequest) {
+        return restaurantService.getAllRestaurants(page, size, sortBy, direction, restaurantSearchRequest);
     }
 
     @PutMapping("/{id}")
