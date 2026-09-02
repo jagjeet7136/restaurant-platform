@@ -40,7 +40,7 @@ public class RestaurantController {
             @Max(value = 100, message = "Page size must not exceed 100") int size,
                                                               @RequestParam(defaultValue = "id") String sortBy,
                                                               @RequestParam(defaultValue = "asc") String direction,
-                                                              @ModelAttribute RestaurantSearchRequest restaurantSearchRequest) {
+                                                              @ModelAttribute @Valid RestaurantSearchRequest restaurantSearchRequest) {
         return restaurantService.getAllRestaurants(page, size, sortBy, direction, restaurantSearchRequest);
     }
 
