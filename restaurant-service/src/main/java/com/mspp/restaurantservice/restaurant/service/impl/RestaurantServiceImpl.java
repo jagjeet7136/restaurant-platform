@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Sort;
 import java.util.Set;
-
 import static com.mspp.restaurantservice.restaurant.specification.RestaurantSpecification.*;
 
 @Service
