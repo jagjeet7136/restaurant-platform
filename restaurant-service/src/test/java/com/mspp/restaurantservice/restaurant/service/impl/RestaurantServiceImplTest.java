@@ -175,10 +175,11 @@ class RestaurantServiceImplTest {
         request.setClosingTime(LocalTime.of(23, 0));
         request.setActive(true);
 
-        when(restaurantRepository.findById(1L)).thenReturn(Optional.of(existingRestaurant));
+        when(restaurantRepository.findById(1L))
+                .thenReturn(Optional.of(existingRestaurant));
 
         when(restaurantRepository.save(any(Restaurant.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+                .thenReturn(existingRestaurant);
 
         RestaurantResponse response = restaurantService.updateRestaurant(1L, request);
 
@@ -301,13 +302,16 @@ class RestaurantServiceImplTest {
 
         RestaurantSearchRequest searchRequest = new RestaurantSearchRequest();
 
-        when(restaurantRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(restaurantPage);
+        when(restaurantRepository
+                .findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(restaurantPage);
 
         restaurantService.getAllRestaurants(2, 5, "name", "desc", searchRequest);
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
 
-        verify(restaurantRepository).findAll(any(Specification.class), pageableCaptor.capture());
+        verify(restaurantRepository)
+                .findAll(any(Specification.class), pageableCaptor.capture());
 
         Pageable pageable = pageableCaptor.getValue();
 
