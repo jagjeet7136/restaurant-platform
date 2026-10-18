@@ -1,0 +1,22 @@
+server:
+  port: 1001
+
+spring:
+  application:
+    name: order-service
+
+  datasource:
+    url: jdbc:mysql://localhost:3308/order_db
+    username: root
+    password: ${ORDER_DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+  flyway:
+    enabled: true
+
+services:
+  restaurant:
+    base-url: http://localhost:1000

@@ -37,6 +37,28 @@ services:
       restaurant-db:
         condition: service_healthy
 
+  order-db:
+    image: mysql:8.0.40
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${ORDER_MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: order_db
+
+    ports:
+      - "3308:3306"
+
+    volumes:
+      - order-db-data:/var/lib/mysql
+
+    healthcheck:
+      test: [ "CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD --silent" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+
 
 volumes:
   restaurant-db-data:
+  order-db-data:
