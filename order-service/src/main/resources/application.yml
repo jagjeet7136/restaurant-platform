@@ -1,19 +1,41 @@
 server:
   port: 1001
 
+resilience4j:
+  circuitbreaker:
+    instances:
+      restaurantService:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 3
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 2
+
+        recordExceptions:
+          - com.mspp.orderservice.exception.ExternalServiceUnavailableException
+
+        ignoreExceptions:
+          - com.mspp.orderservice.exception.RestaurantNotFoundException
+
 spring:
+  cloud:
+    circuitbreaker:
+      resilience4j:
+        disable-time-limiter: true
   application:
     name: order-service
-
+  http:
+    clients:
+      connect-timeout: 2s
+      read-timeout: 3s
   datasource:
     url: jdbc:mysql://localhost:3308/order_db
     username: root
     password: ${ORDER_DB_PASSWORD}
-
   jpa:
     hibernate:
       ddl-auto: validate
-
   flyway:
     enabled: true
 

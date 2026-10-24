@@ -1,7 +1,8 @@
 package com.mspp.orderservice.order.service.impl;
 
-import com.mspp.orderservice.client.restaurant.RestaurantClient;
 import com.mspp.orderservice.client.restaurant.RestaurantClientResponse;
+import com.mspp.orderservice.client.restaurant.RestaurantServiceGateway;
+import com.mspp.orderservice.exception.BusinessValidationException;
 import com.mspp.orderservice.order.dto.request.OrderCreateRequest;
 import com.mspp.orderservice.order.dto.response.OrderResponse;
 import com.mspp.orderservice.order.entity.Order;
@@ -16,16 +17,18 @@ import org.springframework.stereotype.Service;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    private final RestaurantClient restaurantClient;
+    private final RestaurantServiceGateway restaurantServiceGateway;
 
     @Override
     public OrderResponse createOrder(OrderCreateRequest request) {
 
         RestaurantClientResponse restaurant =
-                restaurantClient.getRestaurantById(request.getRestaurantId());
+                restaurantServiceGateway.getRestaurantById(
+                        request.getRestaurantId()
+                );
 
         if (!Boolean.TRUE.equals(restaurant.getActive())) {
-            throw new IllegalArgumentException(
+            throw new BusinessValidationException(
                     "Cannot place an order for an inactive restaurant"
             );
         }
