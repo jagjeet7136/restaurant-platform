@@ -11,10 +11,8 @@ resilience4j:
         failureRateThreshold: 50
         waitDurationInOpenState: 10s
         permittedNumberOfCallsInHalfOpenState: 2
-
         recordExceptions:
           - com.mspp.orderservice.exception.ExternalServiceUnavailableException
-
         ignoreExceptions:
           - com.mspp.orderservice.exception.RestaurantNotFoundException
 

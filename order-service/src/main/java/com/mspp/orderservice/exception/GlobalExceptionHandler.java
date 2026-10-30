@@ -63,6 +63,11 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleOrderNotFound(OrderNotFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+    }
+
     private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String message, Map<String, String> errors) {
 
         ErrorResponse response = ErrorResponse.builder()
