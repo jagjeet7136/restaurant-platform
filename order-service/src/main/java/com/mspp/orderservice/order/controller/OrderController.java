@@ -1,8 +1,11 @@
 package com.mspp.orderservice.order.controller;
 
 import com.mspp.orderservice.order.dto.request.OrderCreateRequest;
+import com.mspp.orderservice.order.dto.request.OrderSearchRequest;
 import com.mspp.orderservice.order.dto.request.OrderStatusUpdateRequest;
 import com.mspp.orderservice.order.dto.response.OrderResponse;
+import com.mspp.orderservice.order.dto.response.PageResponse;
+import com.mspp.orderservice.order.entity.OrderStatus;
 import com.mspp.orderservice.order.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,5 +33,20 @@ public class OrderController {
     @PatchMapping("/{id}/status")
     public OrderResponse updateOrderStatus(@PathVariable Long id, @Valid @RequestBody OrderStatusUpdateRequest request) {
         return orderService.updateOrderStatus(id, request.getStatus());
+    }
+
+    @GetMapping
+    public PageResponse<OrderResponse> getAllOrders(
+            @RequestParam(required = false) Long restaurantId,
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+
+        OrderSearchRequest searchRequest = new OrderSearchRequest();
+        searchRequest.setRestaurantId(restaurantId);
+        searchRequest.setStatus(status);
+        return orderService.getAllOrders(searchRequest, page, size
+        );
     }
 }

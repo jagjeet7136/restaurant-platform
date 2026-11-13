@@ -5,7 +5,9 @@ import com.mspp.orderservice.client.restaurant.RestaurantServiceGateway;
 import com.mspp.orderservice.exception.BusinessValidationException;
 import com.mspp.orderservice.exception.OrderNotFoundException;
 import com.mspp.orderservice.order.dto.request.OrderCreateRequest;
+import com.mspp.orderservice.order.dto.request.OrderSearchRequest;
 import com.mspp.orderservice.order.dto.response.OrderResponse;
+import com.mspp.orderservice.order.dto.response.PageResponse;
 import com.mspp.orderservice.order.entity.Order;
 import com.mspp.orderservice.order.entity.OrderStatus;
 import com.mspp.orderservice.order.repository.OrderRepository;
@@ -14,10 +16,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -113,6 +122,52 @@ public class OrderServiceImplTest {
         assertEquals(OrderStatus.CONFIRMED, response.getStatus());
 
         assertEquals(OrderStatus.CONFIRMED, order.getStatus());
+    }
+
+    @Test
+    void shouldGetAllOrdersWithPagination() {
+
+        Order order1 = createOrder(
+                1L,
+                OrderStatus.PENDING
+        );
+
+        Order order2 = createOrder(
+                2L,
+                OrderStatus.CONFIRMED
+        );
+
+        Page<Order> orderPage =
+                new PageImpl<>(
+                        List.of(order1, order2),
+                        PageRequest.of(0, 10),
+                        2
+                );
+
+        when(orderRepository.findAll(
+                any(Specification.class),
+                any(Pageable.class)
+        )).thenReturn(orderPage);
+
+        OrderSearchRequest searchRequest =
+                new OrderSearchRequest();
+
+        PageResponse<OrderResponse> response =
+                orderService.getAllOrders(
+                        searchRequest,
+                        0,
+                        10
+                );
+
+        assertEquals(2, response.getContent().size());
+        assertEquals(0, response.getPage());
+        assertEquals(10, response.getSize());
+        assertEquals(2, response.getTotalElements());
+
+        verify(orderRepository).findAll(
+                any(Specification.class),
+                any(Pageable.class)
+        );
     }
 
     private Order createOrder(Long id, OrderStatus status) {

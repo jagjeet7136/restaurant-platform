@@ -5,12 +5,20 @@ import com.mspp.orderservice.client.restaurant.RestaurantServiceGateway;
 import com.mspp.orderservice.exception.BusinessValidationException;
 import com.mspp.orderservice.exception.OrderNotFoundException;
 import com.mspp.orderservice.order.dto.request.OrderCreateRequest;
+import com.mspp.orderservice.order.dto.request.OrderSearchRequest;
 import com.mspp.orderservice.order.dto.response.OrderResponse;
+import com.mspp.orderservice.order.dto.response.PageResponse;
 import com.mspp.orderservice.order.entity.Order;
 import com.mspp.orderservice.order.entity.OrderStatus;
 import com.mspp.orderservice.order.repository.OrderRepository;
 import com.mspp.orderservice.order.service.OrderService;
+import com.mspp.orderservice.order.specification.OrderSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,6 +70,27 @@ public class OrderServiceImpl implements OrderService {
         validateStatusTransition(order.getStatus(), newStatus);
         order.setStatus(newStatus);
         return toResponse(order);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<OrderResponse> getAllOrders(OrderSearchRequest searchRequest, int page, int size) {
+
+        if (page < 0) {
+            throw new BusinessValidationException("Page number cannot be negative");
+        }
+
+        if (size < 1 || size > 100) {
+            throw new BusinessValidationException("Page size must be between 1 and 100");
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Specification<Order> specification = OrderSpecification.build(searchRequest);
+
+        Page<OrderResponse> orders = orderRepository.findAll(specification, pageable).map(this::toResponse);
+
+        return PageResponse.from(orders);
     }
 
     private OrderResponse toResponse(Order order) {

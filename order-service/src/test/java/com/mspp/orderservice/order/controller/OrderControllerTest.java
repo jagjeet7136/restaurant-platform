@@ -2,16 +2,23 @@ package com.mspp.orderservice.order.controller;
 
 import com.mspp.orderservice.exception.BusinessValidationException;
 import com.mspp.orderservice.exception.OrderNotFoundException;
+import com.mspp.orderservice.order.dto.request.OrderSearchRequest;
 import com.mspp.orderservice.order.dto.response.OrderResponse;
+import com.mspp.orderservice.order.dto.response.PageResponse;
 import com.mspp.orderservice.order.entity.OrderStatus;
 import com.mspp.orderservice.order.service.OrderService;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -171,6 +178,124 @@ class OrderControllerTest {
                                 {
                                 }
                                 """))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(orderService);
+    }
+
+    @Test
+    void shouldGetOrdersWithFilters() throws Exception {
+
+        PageResponse<OrderResponse> response =
+                PageResponse.<OrderResponse>builder()
+                        .content(List.of())
+                        .page(0)
+                        .size(5)
+                        .totalElements(0)
+                        .totalPages(0)
+                        .first(true)
+                        .last(true)
+                        .hasNext(false)
+                        .hasPrevious(false)
+                        .build();
+
+        when(orderService.getAllOrders(
+                any(OrderSearchRequest.class),
+                eq(0),
+                eq(5)
+        )).thenReturn(response);
+
+        mockMvc.perform(
+                        get("/api/v1/orders")
+                                .param("restaurantId", "2")
+                                .param("status", "PENDING")
+                                .param("page", "0")
+                                .param("size", "5")
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(5));
+
+        ArgumentCaptor<OrderSearchRequest> captor =
+                ArgumentCaptor.forClass(
+                        OrderSearchRequest.class
+                );
+
+        verify(orderService).getAllOrders(
+                captor.capture(),
+                eq(0),
+                eq(5)
+        );
+
+        OrderSearchRequest capturedRequest =
+                captor.getValue();
+
+        assertEquals(
+                2L,
+                capturedRequest.getRestaurantId()
+        );
+
+        assertEquals(
+                OrderStatus.PENDING,
+                capturedRequest.getStatus()
+        );
+    }
+
+    @Test
+    void shouldGetOrdersFilteredByStatus() throws Exception {
+
+        when(orderService.getAllOrders(
+                any(OrderSearchRequest.class),
+                eq(0),
+                eq(10)
+        )).thenReturn(
+                PageResponse.<OrderResponse>builder()
+                        .content(List.of())
+                        .page(0)
+                        .size(10)
+                        .totalElements(0)
+                        .totalPages(0)
+                        .first(true)
+                        .last(true)
+                        .hasNext(false)
+                        .hasPrevious(false)
+                        .build()
+        );
+
+        mockMvc.perform(
+                        get("/api/v1/orders")
+                                .param("status", "CONFIRMED")
+                )
+                .andExpect(status().isOk());
+
+        ArgumentCaptor<OrderSearchRequest> captor =
+                ArgumentCaptor.forClass(
+                        OrderSearchRequest.class
+                );
+
+        verify(orderService).getAllOrders(
+                captor.capture(),
+                eq(0),
+                eq(10)
+        );
+
+        assertNull(
+                captor.getValue().getRestaurantId()
+        );
+
+        assertEquals(
+                OrderStatus.CONFIRMED,
+                captor.getValue().getStatus()
+        );
+    }
+
+    @Test
+    void shouldReturn400WhenStatusIsInvalid() throws Exception {
+
+        mockMvc.perform(
+                        get("/api/v1/orders")
+                                .param("status", "HELLO")
+                )
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(orderService);
