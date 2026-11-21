@@ -57,6 +57,23 @@ services:
       retries: 10
       start_period: 20s
 
+  order-service:
+    build:
+      context: ./order-service
+
+    ports:
+      - "1001:1001"
+
+    environment:
+      DB_URL: jdbc:mysql://order-db:3306/order_db
+      DB_USERNAME: root
+      DB_PASSWORD: ${ORDER_MYSQL_ROOT_PASSWORD}
+
+      RESTAURANT_SERVICE_BASE_URL: http://restaurant-service:1000
+
+    depends_on:
+      order-db:
+        condition: service_healthy
 
 
 volumes:
