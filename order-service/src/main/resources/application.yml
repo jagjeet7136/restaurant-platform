@@ -28,9 +28,9 @@ spring:
       connect-timeout: 2s
       read-timeout: 3s
   datasource:
-    url: jdbc:mysql://localhost:3308/order_db
-    username: root
-    password: ${ORDER_DB_PASSWORD}
+    url: ${DB_URL:jdbc:mysql://localhost:3308/order_db}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -39,4 +39,4 @@ spring:
 
 services:
   restaurant:
-    base-url: http://localhost:1000
+    base-url: ${RESTAURANT_SERVICE_BASE_URL:http://localhost:1000}

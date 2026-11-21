@@ -6,8 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 
@@ -31,18 +29,44 @@ public class RestaurantClient {
             maxDelay = 1000
     )
     public RestaurantClientResponse getRestaurantById(Long restaurantId) {
-        log.info("Calling Restaurant Service for restaurantId={}", restaurantId);
+
+        log.info(
+                "Calling Restaurant Service for restaurantId={}",
+                restaurantId
+        );
+
         try {
+
             return restClient
                     .get()
-                    .uri("/api/v1/restaurants/{id}", restaurantId)
+                    .uri(
+                            "/api/v1/restaurants/{id}",
+                            restaurantId
+                    )
                     .retrieve()
+
+                    .onStatus(
+                            status -> status.value() == 404,
+                            (request, response) -> {
+                                throw new RestaurantNotFoundException(
+                                        restaurantId
+                                );
+                            }
+                    )
+
+                    .onStatus(
+                            status -> status.is5xxServerError(),
+                            (request, response) -> {
+                                throw new ExternalServiceUnavailableException(
+                                        "Restaurant Service is currently unavailable"
+                                );
+                            }
+                    )
+
                     .body(RestaurantClientResponse.class);
 
-        } catch (HttpClientErrorException.NotFound ex) {
-            throw new RestaurantNotFoundException(restaurantId);
+        } catch (ResourceAccessException ex) {
 
-        } catch (ResourceAccessException | HttpServerErrorException ex) {
             throw new ExternalServiceUnavailableException(
                     "Restaurant Service is currently unavailable"
             );
