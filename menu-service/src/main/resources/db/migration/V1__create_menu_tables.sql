@@ -35,10 +35,14 @@ CREATE TABLE menu_items (
         FOREIGN KEY (category_id, restaurant_id)
         REFERENCES menu_categories (id, restaurant_id),
 
+    CONSTRAINT uk_menu_item_category_name
+        UNIQUE (category_id, name),
+
     CONSTRAINT chk_menu_item_price
         CHECK (price > 0),
 
     INDEX idx_menu_items_restaurant_id (restaurant_id),
+
     INDEX idx_menu_items_category_restaurant
         (category_id, restaurant_id)
 );

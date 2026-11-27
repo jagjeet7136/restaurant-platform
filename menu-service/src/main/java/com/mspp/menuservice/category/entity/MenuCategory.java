@@ -8,15 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(
-        name = "menu_categories",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uk_category_restaurant_name",
-                        columnNames = {"restaurant_id", "name"}
-                )
-        }
-)
+@Table(name = "menu_categories")
 public class MenuCategory extends BaseEntity {
 
     @Column(name = "restaurant_id", nullable = false)
